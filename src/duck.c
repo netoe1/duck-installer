@@ -5,10 +5,12 @@
 #include <unistd.h>
 #include <locale.h>
 #include <ctype.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #define setUTF() setlocale(LC_ALL, "")
 #define clear() system("clear")
-#define DEFAULT_PATH "/usr/bin/%s"
+#define DEFAULT_PATH / usr / bin /
 
 #define CLI_FUNCTION argv[1]
 #define CLI_PROGRAM argv[2]
@@ -29,15 +31,14 @@ char *helpMessage =
 \t Any doubt about usage, see readme for more details.\n\
 ";
 
-bool validString(char *ptr);
 void sudoStatus();
 void add_program(char *binname);
 void remove_program(char *binname);
 void invalid_usage();
+void verifyValidString(char *string);
 int main(int argc, char **argv)
 {
     setUTF();
-    printf("\t\tDUCK DUCK DUCK DUCK\nWelcome to the duck, a linux binary installer.\n");
     sudoStatus();
 
     switch (argc)
@@ -54,13 +55,13 @@ int main(int argc, char **argv)
     case 3:
         if (strcmp("add", CLI_FUNCTION) == 0)
         {
-            validString(CLI_PROGRAM);
+            verifyValidString(CLI_PROGRAM);
             add_program(CLI_PROGRAM);
             return EXIT_SUCCESS;
         }
         if (strcmp("remove", CLI_FUNCTION) == 0)
         {
-            validString(CLI_PROGRAM);
+            verifyValidString(CLI_PROGRAM);
             remove_program(CLI_PROGRAM);
             return EXIT_SUCCESS;
         }
@@ -72,18 +73,6 @@ int main(int argc, char **argv)
     }
     return EXIT_FAILURE;
 }
-
-bool validString(char *ptr)
-{
-    if (ptr == NULL || ptr[0] == '\0')
-    {
-        puts("duck-quack: invalid string format for CLI.");
-        return false;
-    }
-
-    return true;
-}
-
 void sudoStatus()
 {
     if (geteuid() != 0)
@@ -95,55 +84,55 @@ void sudoStatus()
 
 void add_program(char *binname)
 {
-    if (validString(binname))
-    {
-        // FILE *p = fopen("r", binname);
+    verifyValidString(binname);
+    static struct stat stat_buffer;
+    // char filepath[FILENAME_MAX];
+    //  char directory[256];
+    //  if (getcwd(directory, sizeof(directory)) == NULL)
+    //  {
+    //      perror("duck-error: Failed to get current directory.");
+    //      exit(EXIT_FAILURE);
+    //  }
+    //  snprintf(filepath, (size_t)sizeof(filepath), "%s/%s", directory, binname);
+    //  puts(filepath);
 
-        // if (p == NULL)
-        // {
-        //     puts("duck-quack: Cannot find program to add.");
-        //     exit(EXIT_FAILURE);
-        // }
-        char buffer[100];
-        snprintf(buffer, 99, MV_SCRIPT, binname, binname);
-        system(buffer);
+    char buffer[(size_t)strlen("/usr/bin/") + strlen(binname) + 1];
+    sprintf(buffer, "/usr/bin/%s", binname);
+    if (access(buffer, F_OK) != -1)
+    {
+        puts("duck-quack: the file already exists in the default path");
+        exit(EXIT_FAILURE);
     }
+
+    char cmd[126];
+    snprintf(cmd, sizeof(cmd), "mv %s %s", binname, buffer);
+    puts(cmd);
+
+    if (rename(binname, buffer) == 0)
+    {
+        perror("duck-quack-> cannot move file.");
+        exit(EXIT_FAILURE);
+    }
+
+    puts("duck-success: process complete, program, now is installed your machine.");
 }
 
 void remove_program(char *binname)
 {
-    FILE *p = fopen("r", binname);
-
-    if (!p)
-    {
-        puts("duck-quack: Cannot find program to remove.");
-        exit(EXIT_FAILURE);
-    }
-    char choice = 'a';
-
-    do
-    {
-        printf("\nSure you want to delete the program:%s[Y/N]?", binname);
-        setbuf(stdin, NULL);
-        scanf("%c", &choice);
-        choice = tolower(choice);
-    } while (choice != 's' && choice != 'n');
-
-    if (choice == 's')
-    {
-        char buffer[100];
-        snprintf(buffer, 99, "rm -rf ./usr/bin/%s", binname);
-        system(buffer);
-    }
-    else if (choice == 'n')
-    {
-        puts("duck-status: Aborting removing.");
-    }
-    fclose(p);
+    verifyValidString(binname);
 }
 
 void invalid_usage()
 {
     puts("duck-quack: Invalid command for 2 arguments.");
     help(helpMessage);
+}
+
+void verifyValidString(char *string)
+{
+    if (string == NULL || string[0] == '\0')
+    {
+        puts("duck-quack: Invalid string passed as argument.");
+        exit(EXIT_FAILURE);
+    }
 }
