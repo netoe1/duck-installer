@@ -1,7 +1,11 @@
-all:
-	gcc -o ./bin/duck.o ./src/duck.c
+#setting consts
 
-run:
-	./bin/duck
+CC = gcc
+FILENAME = ducky
+
+
+
+all:
+	${CC} -o ${FILENAME} ./src/${FILENAME}.c
 clean:
-	rm -rf ./bin/*.*
+	rm -rf ./bin/*.o ./*.o

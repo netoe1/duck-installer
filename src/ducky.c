@@ -23,12 +23,12 @@ mv %s /usr/bin/%s"
 // program --help
 
 char *helpMessage =
-    "duck-helper: duck <function> <label>\n \
-\t --help or -h \t Outputs all possible commands \
-\n                                      \
-\t add  <programname> \t Add to /usr/bin, able to call normally on terminal.\
-\t remove <programname> \t Remove the program from /usr/bin \n\
-\t Any doubt about usage, see readme for more details.\n\
+    "ducky-helper: sudo ducky <function> <label>\n \
+    Remember, some functions require sudo privilegies!\n\
+\t --help or -h                     Outputs all possible commands\n \
+\t add, install <programname>       Add to /usr/bin, able to call normally on terminal.\n\
+\t remove <programname>             Remove the program from /usr/bin \n\n\
+    Any doubt about usage, see readme for more details.\n\
 ";
 
 void sudoStatus();
@@ -50,25 +50,27 @@ int main(int argc, char **argv)
             exit(EXIT_SUCCESS);
         }
 
-        puts("duck-quack: Invalid function... see --help :) ! ");
+        puts("ducky-quack: Invalid function... see --help :) ! ");
         break;
     case 3:
-        if (strcmp("add", CLI_FUNCTION) == 0)
+        if (strcmp("add", CLI_FUNCTION) == 0 || strcmp("install", CLI_FUNCTION) == 0)
         {
             verifyValidString(CLI_PROGRAM);
             add_program(CLI_PROGRAM);
             return EXIT_SUCCESS;
         }
-        if (strcmp("remove", CLI_FUNCTION) == 0)
+        if (strcmp("remove", CLI_FUNCTION) == 0 || strcmp("delete", CLI_FUNCTION))
         {
             verifyValidString(CLI_PROGRAM);
             remove_program(CLI_PROGRAM);
             return EXIT_SUCCESS;
         }
 
+        puts("ducky-quack: not a recongnized command ;-;");
+
         break;
     default:
-        puts("duck-quack: invalid usage of duck, see --help.");
+        puts("ducky-quack: invalid usage of ducky, see --help.");
         break;
     }
     return EXIT_FAILURE;
@@ -77,7 +79,7 @@ void sudoStatus()
 {
     if (geteuid() != 0)
     {
-        puts("duck-quack: you must run duck with sudo previlegies ;-;");
+        puts("ducky-quack: you must run ducky with sudo previlegies ;-;");
         exit(EXIT_FAILURE);
     }
 }
@@ -86,45 +88,57 @@ void add_program(char *binname)
 {
     verifyValidString(binname);
     static struct stat stat_buffer;
-    // char filepath[FILENAME_MAX];
-    //  char directory[256];
-    //  if (getcwd(directory, sizeof(directory)) == NULL)
-    //  {
-    //      perror("duck-error: Failed to get current directory.");
-    //      exit(EXIT_FAILURE);
-    //  }
-    //  snprintf(filepath, (size_t)sizeof(filepath), "%s/%s", directory, binname);
-    //  puts(filepath);
-
     char buffer[(size_t)strlen("/usr/bin/") + strlen(binname) + 1];
     sprintf(buffer, "/usr/bin/%s", binname);
-    if (access(buffer, F_OK) != -1)
+    if (stat(buffer, &stat_buffer) == 0)
     {
-        puts("duck-quack: the file already exists in the default path");
+        puts("ducky-quack: the program already exists in the default path.");
         exit(EXIT_FAILURE);
     }
 
-    char cmd[126];
-    snprintf(cmd, sizeof(cmd), "mv %s %s", binname, buffer);
+    char cmd[128];
+    snprintf(cmd, sizeof(cmd) - 1, "mv %s %s > /dev/null 2>&1", binname, buffer);
     puts(cmd);
 
-    if (rename(binname, buffer) == 0)
+    if (system(cmd) != 0)
     {
-        perror("duck-quack-> cannot move file.");
+        perror("ducky-quack-> cannot move file.");
         exit(EXIT_FAILURE);
     }
 
-    puts("duck-success: process complete, program, now is installed your machine.");
+    puts("ducky-success: process complete, program, now is installed your machine.");
 }
 
 void remove_program(char *binname)
 {
     verifyValidString(binname);
+
+    static struct stat stat_buffer;
+
+    char buffer[128];
+
+    snprintf(buffer, 127, "/usr/bin/%s", binname);
+
+    if (stat(buffer, &stat_buffer) != 0)
+    {
+        puts("ducky-quack: program doesn't installed.");
+        exit(EXIT_FAILURE);
+    }
+
+    char cmd[128];
+    snprintf(cmd, 127, "rm %s /usr/bin/%s > /dev/null 2>&1", binname, binname);
+
+    if (system(cmd) == -1)
+    {
+        puts("ducky-quack: program couldn't be removed.");
+        exit(EXIT_FAILURE);
+    }
+    puts("ducky-success: Your program has been removed.");
 }
 
 void invalid_usage()
 {
-    puts("duck-quack: Invalid command for 2 arguments.");
+    puts("ducky-quack: Invalid command for 2 arguments.");
     help(helpMessage);
 }
 
@@ -132,7 +146,7 @@ void verifyValidString(char *string)
 {
     if (string == NULL || string[0] == '\0')
     {
-        puts("duck-quack: Invalid string passed as argument.");
+        puts("ducky-quack: Invalid string passed as argument.");
         exit(EXIT_FAILURE);
     }
 }
