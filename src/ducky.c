@@ -402,7 +402,7 @@ int main(int argc, char **argv)
       add_program(CLI_PROGRAM);
       return EXIT_SUCCESS;
     }
-    if (strcmp("remove", CLI_FUNCTION) == 0 || strcmp("delete", CLI_FUNCTION))
+    if (strcmp("remove", CLI_FUNCTION) == 0 || strcmp("delete", CLI_FUNCTION) || strcmp("uninstall",CLI_FUNCTION) == 0)
     {
       verifyValidString(CLI_PROGRAM);
       remove_program(CLI_PROGRAM);
@@ -440,7 +440,7 @@ void add_program(char *binname)
   }
 
   char cmd[128];
-  snprintf(cmd, sizeof(cmd) - 1, "mv %s %s > /dev/null 2>&1", binname, buffer);
+  snprintf(cmd, 127, "mv %s %s > /dev/null 2>&1", binname, buffer);
   puts(cmd);
 
   if (system(cmd) != 0)
@@ -449,7 +449,7 @@ void add_program(char *binname)
     exit(EXIT_FAILURE);
   }
 
-  puts("ducky-success: process complete, program, now is installed your machine.");
+  puts("ducky-success: process complete, the program has been installed in your machine!");
 }
 
 void remove_program(char *binname)
