@@ -386,6 +386,9 @@ int main(int argc, char **argv)
 
   switch (argc)
   {
+  case 1:
+    help(helpMessage);
+    break;
   case 2:
     if (strcmp("--help", CLI_FUNCTION) == 0 || strcmp("-h", CLI_FUNCTION) == 0)
     {
@@ -402,7 +405,7 @@ int main(int argc, char **argv)
       add_program(CLI_PROGRAM);
       return EXIT_SUCCESS;
     }
-    if (strcmp("remove", CLI_FUNCTION) == 0 || strcmp("delete", CLI_FUNCTION) || strcmp("uninstall",CLI_FUNCTION) == 0)
+    if (strcmp("remove", CLI_FUNCTION) == 0 || strcmp("delete", CLI_FUNCTION) || strcmp("uninstall", CLI_FUNCTION) == 0)
     {
       verifyValidString(CLI_PROGRAM);
       remove_program(CLI_PROGRAM);
@@ -489,7 +492,7 @@ void verifyValidString(char *string)
 {
   if (string == NULL || string[0] == '\0')
   {
-    puts("ducky-quack: Invalid string passed as argument.");
+    puts("ducky-quack: Invalid string passed as an argument.");
     exit(EXIT_FAILURE);
   }
 }
