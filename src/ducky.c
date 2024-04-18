@@ -359,6 +359,7 @@ Public License instead of this License.
 #define CLI_PROGRAM argv[2]
 #define MV_SCRIPT "\
 mv %s /usr/bin/%s"
+#define RM_SCRIPT "rm -rf %s"
 
 #define help(message) puts(helpMessage)
 // program add <program_name>
@@ -495,4 +496,16 @@ void verifyValidString(char *string)
     puts("ducky-quack: Invalid string passed as an argument.");
     exit(EXIT_FAILURE);
   }
+}
+
+
+void removeProgram(const char *str){
+  if(str[0] == '\0'){
+    puts("ducky-quack: Invalid program to remove.");
+    return;
+  }
+  char buf[512];
+  snprintf(buf,strlen(buf),RM_SCRIPT,str);
+  system(buf);
+  return;
 }
